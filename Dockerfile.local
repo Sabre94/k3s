@@ -1,4 +1,4 @@
-ARG GOLANG=golang:1.22.9-alpine3.19
+ARG GOLANG=dockerpull.org/golang:1.22.9-alpine3.20
 FROM ${GOLANG} as infra
 
 ARG http_proxy=$http_proxy
@@ -11,7 +11,7 @@ ENV no_proxy=$no_proxy
 RUN apk -U --no-cache add bash git gcc musl-dev docker vim less file curl wget ca-certificates jq linux-headers \
     zlib-dev tar zip squashfs-tools npm coreutils python3 py3-pip openssl-dev libffi-dev libseccomp libseccomp-dev \
     libseccomp-static make libuv-static sqlite-dev sqlite-static libselinux libselinux-dev zlib-dev zlib-static \
-    zstd pigz alpine-sdk binutils-gold btrfs-progs-dev btrfs-progs-static gawk yq pipx \
+    zstd pigz alpine-sdk btrfs-progs-dev btrfs-progs-static gawk yq pipx \
     && \
     if [ "$(go env GOARCH)" = "amd64" ]; then \
     apk -U --no-cache add mingw-w64-gcc; \
@@ -20,7 +20,7 @@ RUN apk -U --no-cache add bash git gcc musl-dev docker vim less file curl wget c
 RUN PIPX_BIN_DIR=/usr/local/bin pipx install awscli
 
 # this works for both go 1.17 and 1.18
-RUN GOPROXY=direct go install golang.org/x/tools/cmd/goimports@gopls/v0.11.0
+RUN GOPROXY=https://goproxy.cn go install golang.org/x/tools/cmd/goimports@latest
 RUN rm -rf /go/src /go/pkg
 
 RUN if [ "$(go env GOARCH)" = "amd64" ]; then \
@@ -49,9 +49,9 @@ COPY ./cmd ./cmd
 COPY ./tests ./tests
 COPY ./.git ./.git
 COPY ./pkg ./pkg
-RUN --mount=type=cache,id=gomod,target=/go/pkg/mod \
-    --mount=type=cache,id=gobuild,target=/root/.cache/go-build \
-    ./scripts/build
+COPY ./vendor ./vendor
+RUN --mount=type=cache,id=gobuild,target=/root/.cache/go-build \
+		./scripts/build
 
 COPY ./contrib ./contrib
 RUN --mount=type=cache,id=gomod,target=/go/pkg/mod \
