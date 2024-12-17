@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"k8s.io/klog/v2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -350,11 +351,13 @@ func (u *Unstructured) SetRemainingItemCount(c *int64) {
 func (u *Unstructured) GetCreationTimestamp() metav1.Time {
 	var timestamp metav1.Time
 	timestamp.UnmarshalQueryParameter(getNestedString(u.Object, "metadata", "creationTimestamp"))
+	klog.InfoS("GetCreationTimestamp结果为:", timestamp)
 	return timestamp
 }
 
 func (u *Unstructured) SetCreationTimestamp(timestamp metav1.Time) {
 	ts, _ := timestamp.MarshalQueryParameter()
+	klog.InfoS("MarshalQueryParameter结果为：", ts)
 	if len(ts) == 0 || timestamp.Time.IsZero() {
 		RemoveNestedField(u.Object, "metadata", "creationTimestamp")
 		return

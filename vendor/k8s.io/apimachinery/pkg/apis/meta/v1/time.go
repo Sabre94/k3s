@@ -23,6 +23,9 @@ import (
 	cbor "k8s.io/apimachinery/pkg/runtime/serializer/cbor/direct"
 )
 
+// RFC3339Milli defines the time format with millisecond precision
+const RFC3339Milli = "2006-01-02T15:04:05.000Z"
+
 // Time is a wrapper around time.Time which supports correct
 // marshaling to YAML and JSON.  Wrappers are provided for many
 // of the factory methods that the time package offers.
@@ -90,9 +93,9 @@ func Unix(sec int64, nsec int64) Time {
 	return Time{time.Unix(sec, nsec)}
 }
 
-// Rfc3339Copy returns a copy of the Time at second-level precision.
-func (t Time) Rfc3339Copy() Time {
-	copied, _ := time.Parse(time.RFC3339, t.Format(time.RFC3339))
+// RFC3339MilliCopy returns a copy of the Time at second-level precision.
+func (t Time) RFC3339Copy() Time {
+	copied, _ := time.Parse(RFC3339Milli, t.Format(RFC3339Milli))
 	return Time{copied}
 }
 
@@ -109,7 +112,7 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	pt, err := time.Parse(time.RFC3339, str)
+	pt, err := time.Parse(RFC3339Milli, str)
 	if err != nil {
 		return err
 	}
@@ -128,7 +131,7 @@ func (t *Time) UnmarshalCBOR(b []byte) error {
 		return nil
 	}
 
-	parsed, err := time.Parse(time.RFC3339, *s)
+	parsed, err := time.Parse(RFC3339Milli, *s)
 	if err != nil {
 		return err
 	}
@@ -149,7 +152,7 @@ func (t *Time) UnmarshalQueryParameter(str string) error {
 		return nil
 	}
 
-	pt, err := time.Parse(time.RFC3339, str)
+	pt, err := time.Parse(RFC3339Milli, str)
 	if err != nil {
 		return err
 	}
@@ -164,10 +167,10 @@ func (t Time) MarshalJSON() ([]byte, error) {
 		// Encode unset/nil objects as JSON's "null".
 		return []byte("null"), nil
 	}
-	buf := make([]byte, 0, len(time.RFC3339)+2)
+	buf := make([]byte, 0, len(RFC3339Milli)+2)
 	buf = append(buf, '"')
 	// time cannot contain non escapable JSON characters
-	buf = t.UTC().AppendFormat(buf, time.RFC3339)
+	buf = t.UTC().AppendFormat(buf, RFC3339Milli)
 	buf = append(buf, '"')
 	return buf, nil
 }
@@ -177,7 +180,7 @@ func (t Time) MarshalCBOR() ([]byte, error) {
 		return cbor.Marshal(nil)
 	}
 
-	return cbor.Marshal(t.UTC().Format(time.RFC3339))
+	return cbor.Marshal(t.UTC().Format(RFC3339Milli))
 }
 
 // ToUnstructured implements the value.UnstructuredConverter interface.
@@ -185,8 +188,8 @@ func (t Time) ToUnstructured() interface{} {
 	if t.IsZero() {
 		return nil
 	}
-	buf := make([]byte, 0, len(time.RFC3339))
-	buf = t.UTC().AppendFormat(buf, time.RFC3339)
+	buf := make([]byte, 0, len(RFC3339Milli))
+	buf = t.UTC().AppendFormat(buf, RFC3339Milli)
 	return string(buf)
 }
 
@@ -207,5 +210,5 @@ func (t Time) MarshalQueryParameter() (string, error) {
 		return "", nil
 	}
 
-	return t.UTC().Format(time.RFC3339), nil
+	return t.UTC().Format(RFC3339Milli), nil
 }

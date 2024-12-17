@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/klog/v2"
 )
 
 // WipeObjectMetaSystemFields erases fields that are managed by the system on ObjectMeta.
@@ -34,6 +35,7 @@ func WipeObjectMetaSystemFields(meta metav1.Object) {
 
 // FillObjectMetaSystemFields populates fields that are managed by the system on ObjectMeta.
 func FillObjectMetaSystemFields(meta metav1.Object) {
+	klog.InfoS("即将执行创建时间戳")
 	meta.SetCreationTimestamp(metav1.Now())
 	meta.SetUID(uuid.NewUUID())
 }
