@@ -19,6 +19,7 @@ package v1
 import (
 	"context"
 	"fmt"
+	"k8s.io/klog/v2"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,6 +59,8 @@ func (e *events) CreateWithEventNamespace(event *v1.Event) (*v1.Event, error) {
 		Body(event).
 		Do(context.TODO()).
 		Into(result)
+	logger := klog.FromContext(context.TODO())
+	logger.Info("Event details:", "Namespace", result.InvolvedObject.Namespace, "Name", result.InvolvedObject.Name, "Message", result.Message, "Reason", result.Reason, "Type", result.Type)
 	return result, err
 }
 
