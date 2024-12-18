@@ -207,6 +207,7 @@ func (m *kubeGenericRuntimeManager) startContainer(ctx context.Context, podSandb
 	}
 
 	imageRef, msg, err := m.imagePuller.EnsureImageExists(ctx, ref, pod, container.Image, pullSecrets, podSandboxConfig, podRuntimeHandler, container.ImagePullPolicy)
+	klog.InfoS("pull the image")
 	if err != nil {
 		s, _ := grpcstatus.FromError(err)
 		m.recordContainerEvent(pod, container, "", v1.EventTypeWarning, events.FailedToCreateContainer, "Error: %v", s.Message())
@@ -263,6 +264,7 @@ func (m *kubeGenericRuntimeManager) startContainer(ctx context.Context, podSandb
 	}
 
 	containerID, err := m.runtimeService.CreateContainer(ctx, podSandboxID, containerConfig, podSandboxConfig)
+	klog.InfoS("Created the container")
 	if err != nil {
 		s, _ := grpcstatus.FromError(err)
 		m.recordContainerEvent(pod, container, containerID, v1.EventTypeWarning, events.FailedToCreateContainer, "Error: %v", s.Message())
@@ -278,6 +280,7 @@ func (m *kubeGenericRuntimeManager) startContainer(ctx context.Context, podSandb
 
 	// Step 3: start the container.
 	err = m.runtimeService.StartContainer(ctx, containerID)
+	klog.InfoS("Started the container")
 	if err != nil {
 		s, _ := grpcstatus.FromError(err)
 		m.recordContainerEvent(pod, container, containerID, v1.EventTypeWarning, events.FailedToStartContainer, "Error: %v", s.Message())

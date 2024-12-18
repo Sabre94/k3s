@@ -94,7 +94,7 @@ func Unix(sec int64, nsec int64) Time {
 }
 
 // RFC3339MilliCopy returns a copy of the Time at second-level precision.
-func (t Time) RFC3339Copy() Time {
+func (t Time) Rfc3339Copy() Time {
 	copied, _ := time.Parse(RFC3339Milli, t.Format(RFC3339Milli))
 	return Time{copied}
 }

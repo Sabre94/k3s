@@ -483,6 +483,7 @@ func (recorder *recorderImpl) AnnotatedEventf(object runtime.Object, annotations
 
 func (recorder *recorderImpl) makeEvent(ref *v1.ObjectReference, annotations map[string]string, eventtype, reason, message string) *v1.Event {
 	t := metav1.Time{Time: recorder.clock.Now()}
+	klog.InfoS("makeevent后时间为：", t)
 	namespace := ref.Namespace
 	if namespace == "" {
 		namespace = metav1.NamespaceDefault
