@@ -437,7 +437,7 @@ type recorderImpl struct {
 var _ EventRecorder = &recorderImpl{}
 
 func (recorder *recorderImpl) generateEvent(logger klog.Logger, object runtime.Object, annotations map[string]string, eventtype, reason, message string) {
-	klog.InfoS("进入generateEvent")
+	logger.Info("进入generateEvent")
 	ref, err := ref.GetReference(recorder.scheme, object)
 	if err != nil {
 		logger.Error(err, "Could not construct reference, will not report event", "object", object, "eventType", eventtype, "reason", reason, "message", message)
@@ -483,9 +483,10 @@ func (recorder *recorderImpl) AnnotatedEventf(object runtime.Object, annotations
 }
 
 func (recorder *recorderImpl) makeEvent(ref *v1.ObjectReference, annotations map[string]string, eventtype, reason, message string) *v1.Event {
-	klog.InfoS("进入makeevent")
+	logger := klog.FromContext(context.TODO())
+	logger.Info("进入makeevent")
 	t := metav1.Time{Time: recorder.clock.Now()}
-	klog.InfoS("makeevent后时间为：", t)
+	logger.Info("makeevent后时间为：", t)
 	namespace := ref.Namespace
 	if namespace == "" {
 		namespace = metav1.NamespaceDefault
