@@ -262,15 +262,17 @@ func (m *kubeGenericRuntimeManager) startContainer(ctx context.Context, podSandb
 		m.recordContainerEvent(pod, container, "", v1.EventTypeWarning, events.FailedToCreateContainer, "Internal PreCreateContainer hook failed: %v", s.Message())
 		return s.Message(), ErrPreCreateHook
 	}
-
+	klog.InfoS("Created the container前")
 	containerID, err := m.runtimeService.CreateContainer(ctx, podSandboxID, containerConfig, podSandboxConfig)
-	klog.InfoS("Created the container")
+	klog.InfoS("Created the container后")
 	if err != nil {
 		s, _ := grpcstatus.FromError(err)
 		m.recordContainerEvent(pod, container, containerID, v1.EventTypeWarning, events.FailedToCreateContainer, "Error: %v", s.Message())
 		return s.Message(), ErrCreateContainer
 	}
+	klog.InfoS("PreStartContainer前")
 	err = m.internalLifecycle.PreStartContainer(pod, container, containerID)
+	klog.InfoS("PreStartContainer后")
 	if err != nil {
 		s, _ := grpcstatus.FromError(err)
 		m.recordContainerEvent(pod, container, containerID, v1.EventTypeWarning, events.FailedToStartContainer, "Internal PreStartContainer hook failed: %v", s.Message())
@@ -279,8 +281,9 @@ func (m *kubeGenericRuntimeManager) startContainer(ctx context.Context, podSandb
 	m.recordContainerEvent(pod, container, containerID, v1.EventTypeNormal, events.CreatedContainer, fmt.Sprintf("Created container %s", container.Name))
 
 	// Step 3: start the container.
+	klog.InfoS("Started the container前")
 	err = m.runtimeService.StartContainer(ctx, containerID)
-	klog.InfoS("Started the container")
+	klog.InfoS("Started the container后")
 	if err != nil {
 		s, _ := grpcstatus.FromError(err)
 		m.recordContainerEvent(pod, container, containerID, v1.EventTypeWarning, events.FailedToStartContainer, "Error: %v", s.Message())
