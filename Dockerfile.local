@@ -38,6 +38,7 @@ FROM infra as build
 
 ARG SKIP_VALIDATE
 
+RUN go env -w GOPROXY=https://goproxy.cn
 COPY ./scripts/ ./scripts
 COPY ./go.mod ./go.sum ./main.go ./
 COPY ./manifests ./manifests
