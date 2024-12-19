@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    k8s.kuboard.cn/ingress: 'false'
+    k8s.kuboard.cn/service: metrics-scraper
+    k8s.kuboard.cn/workload: metrics-scraper
+  labels:
+    k8s.kuboard.cn/name: metrics-scraper
+  name: metrics-scraper
+  namespace: kuboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s.kuboard.cn/name: metrics-scraper
+  template:
+    metadata:
+      annotations:
+        k8s.kuboard.cn/ingress: 'false'
+        k8s.kuboard.cn/service: metrics-scraper
+        k8s.kuboard.cn/workload: metrics-scraper
+      labels:
+        k8s.kuboard.cn/name: metrics-scraper
+    spec:
+      containers:
+        - args:
+            - '--metric-duration=30m'
+          image: 'swr.cn-north-4.myhuaweicloud.com/cloud-native-riscv64/metrics-scraper:riscv64'
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 30
+          name: metrics-scraper
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 2001
+            runAsUser: 1001
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      restartPolicy: Always
+      serviceAccount: kuboard-admin
+      serviceAccountName: kuboard-admin
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      volumes:
+        - emptyDir: {}
+          name: tmp-volume
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    k8s.kuboard.cn/ingress: 'false'
+    k8s.kuboard.cn/service: metrics-scraper
+    k8s.kuboard.cn/workload: metrics-scraper
+  labels:
+    k8s.kuboard.cn/name: metrics-scraper
+  name: metrics-scraper
+  namespace: kuboard
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+    - port: 8000
+      protocol: TCP
+      targetPort: 8000
+  selector:
+    k8s.kuboard.cn/name: metrics-scraper
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: metrics-scraper
+  namespace: kuboard
+rules:
+  - apiGroups:
+      - ''
+    resourceNames:
+      - 'http:metrics-scraper:8000'
+    resources:
+      - services/proxy
+    verbs:
+      - get
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: 'system:authenticated-rolebinding-metrics-scraper'
+  namespace: kuboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: metrics-scraper
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: 'system:authenticated'
+
+
