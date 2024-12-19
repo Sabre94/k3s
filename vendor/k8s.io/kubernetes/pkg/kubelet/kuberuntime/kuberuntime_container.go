@@ -262,9 +262,9 @@ func (m *kubeGenericRuntimeManager) startContainer(ctx context.Context, podSandb
 		m.recordContainerEvent(pod, container, "", v1.EventTypeWarning, events.FailedToCreateContainer, "Internal PreCreateContainer hook failed: %v", s.Message())
 		return s.Message(), ErrPreCreateHook
 	}
-	klog.InfoS("开始创建容器，容器：", container.Name)
+	klog.InfoS("开始创建容器，镜像：", container.Image)
 	containerID, err := m.runtimeService.CreateContainer(ctx, podSandboxID, containerConfig, podSandboxConfig)
-	klog.InfoS("成功创建容器，容器ID：", containerID)
+	klog.InfoS("成功创建容器，容器：", container.Name)
 	if err != nil {
 		s, _ := grpcstatus.FromError(err)
 		m.recordContainerEvent(pod, container, containerID, v1.EventTypeWarning, events.FailedToCreateContainer, "Error: %v", s.Message())
