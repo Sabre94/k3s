@@ -57,7 +57,7 @@ data:
         errors
         health
         ready
-        kubernetes %{CLUSTER_DOMAIN}% in-addr.arpa ip6.arpa {
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
           pods insecure
           fallthrough in-addr.arpa ip6.arpa
         }
@@ -120,7 +120,7 @@ spec:
               k8s-app: kube-dns
       containers:
       - name: coredns
-        image: "%{SYSTEM_DEFAULT_REGISTRY}%coredns/coredns:1.11.3"
+        image: "coredns/coredns:1.11.3"
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -204,8 +204,8 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: %{CLUSTER_DNS}%
-  clusterIPs: %{CLUSTER_DNS_LIST}%
+  clusterIP: 10.43.0.10
+  clusterIPs: [10.43.0.10]
   ports:
   - name: dns
     port: 53
@@ -216,4 +216,4 @@ spec:
   - name: metrics
     port: 9153
     protocol: TCP
-  ipFamilyPolicy: %{CLUSTER_DNS_IPFAMILYPOLICY}%
+  ipFamilyPolicy: SingleStack
